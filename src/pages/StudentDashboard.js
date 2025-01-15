@@ -18,7 +18,7 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
   };
 
   // Test data for complaints
-  const [complaints, setComplaints] = useState([
+  const [complaints] = useState([
     {
       id: '1',
       title: 'Complaint Example 1',

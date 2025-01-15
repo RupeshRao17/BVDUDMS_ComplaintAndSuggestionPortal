@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import '../index.css';
-import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import AdminProfiePhoto from "../media/Admin_placeholder.jpg";
 
@@ -12,7 +11,7 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
+
 
   // Test data
   const testComplaints = [
@@ -45,14 +44,7 @@ const AdminDashboard = () => {
     user2: { email: 'faculty1@example.com' },
   };
 
-  const testSuggestions = [
-    {
-      id: '1',
-      title: 'Add more charging ports',
-      description: 'Charging ports in the library are insufficient.',
-      submittedOn: '2025-01-03',
-    },
-  ];
+
 
   const [filteredComplaints, setFilteredComplaints] = useState(testComplaints);
 
@@ -81,20 +73,6 @@ const AdminDashboard = () => {
     }
 
     setFilteredComplaints(filtered);
-  };
-
-  const chartDataStatus = {
-    labels: ['Resolved', 'Unresolved'],
-    datasets: [
-      {
-        data: [
-          testComplaints.filter(complaint => complaint.status === 'resolved').length,
-          testComplaints.filter(complaint => complaint.status === 'unresolved').length,
-        ],
-        backgroundColor: ['#36A2EB', '#FF6384'],
-        hoverBackgroundColor: ['#36A2EB', '#FF6384'],
-      },
-    ],
   };
 
   return (
