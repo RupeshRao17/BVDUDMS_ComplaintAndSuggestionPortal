@@ -1,0 +1,53 @@
+/* Login.css */
+
+/* Container for centering the login form */
+.login-container {
+    @apply flex justify-center items-center min-h-screen m-0 p-0;
+  }
+  
+  /* Style for the login form box */
+  .login-form {
+    @apply bg-white p-6 rounded-lg shadow-lg w-full max-w-sm;
+  }
+  
+  /* Tabs for student and admin */
+  .tabs {
+    @apply flex mb-4 mt-4;
+  }
+  
+  .tab-button {
+    @apply w-1/2 py-2 text-center font-semibold rounded-t-md;
+  }
+  
+  .tab-button.active {
+    @apply bg-dark-blue text-white border-b-4 border-dark-blue shadow-md;
+  }
+  
+  .tab-button.inactive {
+    @apply bg-gray-200 text-gray-600;
+  }
+  
+  /* Title */
+  .login-title {
+    @apply text-2xl font-bold text-center text-dark-blue mb-4 mt-4;
+  }
+  
+  /* Input fields */
+  .input-field {
+    @apply w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-dark-blue;
+  }
+  
+  /* Button styles */
+  .login-button {
+    @apply w-full bg-dark-blue text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition duration-300;
+  }
+  
+  /* Sign Up link */
+  .signup-link {
+    @apply mt-4 text-center text-gray-600;
+  }
+  
+  .signup-link a {
+    @apply text-dark-blue font-semibold hover:underline;
+  }
+  
