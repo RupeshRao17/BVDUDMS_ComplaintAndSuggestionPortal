@@ -5,7 +5,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "bvdudms-complaintandsuggstionsportal",
+    "site": "bvdudms-complaintandsuggestionsportal",
     "public": "build",
     "ignore": [
       "firebase.json",
