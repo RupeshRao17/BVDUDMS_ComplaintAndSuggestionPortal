@@ -10,6 +10,13 @@
           "meta[name=theme-color]"
         ]
       }
-    ]
+    ],
+    "axe/language": [
+      "default",
+      {
+        "html-has-lang": "off"
+      }
+    ],
+    "disown-opener": "off"
   }
 }
