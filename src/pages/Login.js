@@ -72,7 +72,7 @@ const Login = () => {
         <div className="absolute inset-0 flex flex-col items-left justify-center px-4 mt-">
           <div className="max-w-2xl text-left">
             <h1 className="text-2xl lg:text-5xl font-bold text-white">
-              TESSTTTTTT
+              Welcome to Complaints and Suggestion portal
             </h1>
             <p className="text-sm lg:text-lg text-white">
               Your feedback matters! Use this portal to submit any complaints or suggestions. 
