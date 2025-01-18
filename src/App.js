@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import MakeComplaint from './pages/MakeComplaint';
 import logo from './media/logo_campus.png';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
               element={<StudentDashboard isSidebarCollapsed={isSidebarCollapsed} />}
             />
             <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/makecomplaint" element={<MakeComplaint />} />
           </Routes>
         </div>
         <Sidebar
