@@ -125,7 +125,8 @@ const SignUp = () => {
               <ul className="list-disc ml-5">
                 <li>One uppercase letter ex. A,B</li>
                 <li>One lowercase letter ex. a,b</li>
-                <li>One unique character ex. #,@</li>
+                <li>One special character ex. #,@</li>
+                <li>One digit ex. 1,2</li>
               </ul>
             </small>
           </div>
@@ -159,6 +160,7 @@ const SignUp = () => {
               <option value="">Select UserType</option>
               <option value="student">Student</option>
               <option value="faculty">Faculty</option>
+              <option value="admin">Other</option>
             </select>
           </div>
 

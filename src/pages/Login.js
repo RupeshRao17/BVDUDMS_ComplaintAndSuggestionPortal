@@ -69,12 +69,12 @@ const Login = () => {
         {/* Black Tint Overlay */}
         <div className="absolute inset-0 bg-black opacity-50"></div>
         {/* Text Content */}
-        <div className="absolute inset-0 flex flex-col items-left justify-center px-4 mt-">
+        <div className="absolute inset-0 flex flex-col items-left justify-center px-4">
           <div className="max-w-2xl text-left">
-            <h1 className="text-2xl lg:text-5xl font-bold text-white">
+            <h1 className="text-2xl lg:text-5xl font-bold text-white mt-12">
               Welcome to Complaints and Suggestion portal
             </h1>
-            <p className="text-sm lg:text-lg text-white">
+            <p className="text-sm lg:text-lg text-white mt-5">
               Your feedback matters! Use this portal to submit any complaints or suggestions. 
               We are committed to addressing your concerns and improving our services.
             </p>
