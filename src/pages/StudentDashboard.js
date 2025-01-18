@@ -19,7 +19,7 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
   const userId = auth?.currentUser?.uid;
   const navigate = useNavigate();
 
-  
+  // Fetch user details
   useEffect(() => {
     if (!userId) return;
 
@@ -45,7 +45,7 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
     fetchUserDetails();
   }, [userId]);
 
- 
+  // Fetch complaints and listen for updates
   useEffect(() => {
     if (!userId) return;
 
@@ -60,14 +60,14 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
       setComplaints(complaintsArray);
     });
 
-    return () => unsubscribe(); 
+    return () => unsubscribe(); // Clean up the listener when the component unmounts
   }, [userId]);
 
   const handleFeedbackClick = (complaintId) => {
     setSelectedComplaint((prev) => (prev === complaintId ? null : complaintId));
   };
 
- 
+  // Calculate statistics
   const totalComplaints = complaints.length;
   const resolvedComplaints = complaints.filter((complaint) => complaint.status === 'resolved').length;
   const unresolvedComplaints = totalComplaints - resolvedComplaints;
