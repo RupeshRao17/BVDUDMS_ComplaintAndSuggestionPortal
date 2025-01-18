@@ -4,6 +4,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import campusImageDesktop from "../media/Campus_image_2.jpg";
+import Modal from "../Modal"; // Ensure the path is correct
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -16,12 +17,16 @@ const SignUp = () => {
     userType: "Select UserType",
   });
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
     const validateField = (value, message) => {
       if (!value || value === "Select department" || value === "Select UserType") {
-        alert(message);
+        setErrorMessage(message);
+        setShowModal(true);
         return false;
       }
       return true;
@@ -29,7 +34,8 @@ const SignUp = () => {
   
     const validateContactNumber = (contactNumber) => {
       if (contactNumber.length !== 10 || isNaN(contactNumber)) {
-        alert("Please enter a valid 10-digit contact number.");
+        setErrorMessage("Please enter a valid 10-digit contact number.");
+        setShowModal(true);
         return false;
       }
       return true;
@@ -38,7 +44,8 @@ const SignUp = () => {
     const validateEmail = (email) => {
       const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailPattern.test(email)) {
-        alert("Please enter a valid email address.");
+        setErrorMessage("Please enter a valid email address.");
+        setShowModal(true);
         return false;
       }
       return true;
@@ -55,7 +62,7 @@ const SignUp = () => {
       !validateContactNumber(formData.contactNumber) ||
       !validateEmail(formData.email)
     ) {
-      return; 
+      return;
     }
   
     try {
@@ -70,14 +77,21 @@ const SignUp = () => {
         userType: formData.userType.toLowerCase(),
       });
   
-      alert("SignUp Successful! Please log in.");
-      navigate("/login");
+      // Update errorMessage to show a success message
+      setErrorMessage("SignUp Successful! Please log in.");
+      setShowModal(true); // Show the modal on success
+  
+      // Optionally, navigate after closing the modal (handle this as per your needs)
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000); // Navigate after 2 seconds (or adjust as necessary)
     } catch (error) {
       console.error("Error signing up:", error);
-      alert(error.message);
+      setErrorMessage(error.message);
+      setShowModal(true); // Show the modal in case of error
     }
   };
-  
+
   return (
     <div
       className="relative flex justify-center items-center min-h-screen bg-cover bg-center"
@@ -85,17 +99,14 @@ const SignUp = () => {
         backgroundImage: `url(${campusImageDesktop})`,
       }}
     >
-      
       <div className="absolute inset-0 bg-black opacity-50 pointer-events-none z-0"></div>
 
-      
       <div className="relative z-10 bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-dark-blue mb-2">
           Sign Up
-        </h2> 
-        <hr className="mb-5"></hr>
+        </h2>
+        <hr className="mb-5" />
         <div className="space-y-3">
-         
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               First Name
@@ -108,7 +119,6 @@ const SignUp = () => {
             />
           </div>
 
-          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Last Name
@@ -121,7 +131,6 @@ const SignUp = () => {
             />
           </div>
 
-        
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Contact Number
@@ -135,7 +144,6 @@ const SignUp = () => {
             />
           </div>
 
-          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
             <input
@@ -146,7 +154,6 @@ const SignUp = () => {
             />
           </div>
 
-          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Password
@@ -168,7 +175,6 @@ const SignUp = () => {
             </small>
           </div>
 
-          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Department
@@ -184,7 +190,6 @@ const SignUp = () => {
             </select>
           </div>
 
-          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               User Type
@@ -201,7 +206,6 @@ const SignUp = () => {
             </select>
           </div>
 
-          
           <button
             onClick={handleSignUp}
             className="w-full bg-dark-blue text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition duration-300"
@@ -210,7 +214,6 @@ const SignUp = () => {
           </button>
         </div>
 
-       
         <p className="mt-4 text-center text-gray-600">
           Already have an account?{" "}
           <button
@@ -221,6 +224,8 @@ const SignUp = () => {
           </button>
         </p>
       </div>
+
+      {showModal && <Modal message={errorMessage} onClose={() => setShowModal(false)} />}
     </div>
   );
 };

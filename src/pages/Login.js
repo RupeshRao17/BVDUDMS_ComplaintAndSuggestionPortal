@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import campusImageDesktop from "../media/campus-image.jpg";
 import campusImageMobile from "../media/CampusImage_phone.jpg";
+import Modal from "../Modal"; // Ensure the path is correct
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState("Student");
@@ -13,6 +14,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isSwipedUp, setIsSwipedUp] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,24 +33,33 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       if (!userDoc.exists()) {
-        alert("User document not found!");
+        setErrorMessage("User document not found!");
+        setShowModal(true);
         return;
       }
       const role = userDoc.data()?.userType;
 
       if (activeTab === "Student") {
         if (role === "student") navigate("/studentdashboard");
-        else alert("You are not authorized to access the Student Dashboard.");
+        else {
+          setErrorMessage("You are not authorized to access the Student Dashboard.");
+          setShowModal(true);
+        }
       } else if (activeTab === "Admin") {
         const adminDoc = await getDoc(doc(db, "authorizedAdmins", email));
         if (adminDoc.exists()) navigate("/admindashboard");
-        else alert("You are not authorized to access the Admin Dashboard.");
+        else {
+          setErrorMessage("You are not authorized to access the Admin Dashboard.");
+          setShowModal(true);
+        }
       } else {
-        alert("Invalid login type.");
+        setErrorMessage("Invalid login type.");
+        setShowModal(true);
       }
     } catch (error) {
       console.error("Error logging in:", error);
-      alert(error.message);
+      setErrorMessage(error.message);
+      setShowModal(true);
     }
   };
 
@@ -84,11 +96,11 @@ const Login = () => {
 
       {/* Right Section - Login Form */}
       <div
-  className={`absolute lg:relative lg:w-[25%] w-full bg-white transition-all duration-700 ease-in-out 
-    ${isSwipedUp && isMobile ? 'h-[90vh]' : 'h-[10vh]'} 
-    lg:h-full bottom-0 left-0 z-10 rounded-t-3xl lg:rounded-none shadow-lg`}
-  {...(isMobile ? swipeHandlers : {})}
->
+        className={`absolute lg:relative lg:w-[25%] w-full bg-white transition-all duration-700 ease-in-out 
+        ${isSwipedUp && isMobile ? 'h-[90vh]' : 'h-[10vh]'} 
+        lg:h-full bottom-0 left-0 z-10 rounded-t-3xl lg:rounded-none shadow-lg`}
+        {...(isMobile ? swipeHandlers : {})}
+      >
         <div className="h-full flex flex-col items-center justify-center px-8">
           {/* Swipe Instruction */}
           {!isSwipedUp && isMobile && (
@@ -114,7 +126,7 @@ const Login = () => {
           {/* Login Content */}
           <div
             className={`w-full max-w-md transition-opacity duration-500 ease-in-out 
-              ${isSwipedUp || !isMobile ? 'opacity-100' : 'opacity-0'}`}
+            ${isSwipedUp || !isMobile ? 'opacity-100' : 'opacity-0'}`}
           >
             <h1 className="text-xl lg:text-2xl font-bold text-center text-dark-blue mb-6">
               Login Portal
@@ -187,6 +199,9 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for Error/Success */}
+      {showModal && <Modal message={errorMessage} onClose={() => setShowModal(false)} />}
     </div>
   );
 };
