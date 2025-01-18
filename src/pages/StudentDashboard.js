@@ -1,53 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../index.css';
 import { useNavigate } from 'react-router-dom';
+import { auth, db } from '../firebase';
+import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import ProfilePhoto from "../media/StudentDashboard_Placeholder.png";
 
 const StudentDashboard = ({ isSidebarCollapsed }) => {
+  const [complaints, setComplaints] = useState([]);
+  const [user, setUser] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    department: '',
+    contactNo: '',
+    profilePhoto: ProfilePhoto,
+  });
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const userId = auth?.currentUser?.uid;
   const navigate = useNavigate();
 
-  // Test data for user
-  const user = {
-    firstName: 'User1',
-    lastName: 'Example',
-    email: 'user1@example.com',
-    department: 'Computer Science',
-    contactNo: '123-456-7890',
-    profilePhoto: ProfilePhoto,
-    userType: 'Student',
-  };
+  
+  useEffect(() => {
+    if (!userId) return;
 
-  // Test data for complaints
-  const [complaints] = useState([
-    {
-      id: '1',
-      title: 'Complaint Example 1',
-      description: 'The Description of Complaint Example 1.',
-      category: 'Technical',
-      submittedOn: '2025-01-10',
-      priority: 'High',
-      status: 'resolved',
-      feedback: 'The issue has been fixed.',
-    },
-    {
-      id: '2',
-      title: 'Complaint Example 2',
-      description: 'The Description of Complaint Example 1.',
-      category: 'Infrastructure',
-      submittedOn: '2025-01-12',
-      priority: 'Medium',
-      status: 'unresolved',
-      feedback: '',
-    },
-  ]);
+    const fetchUserDetails = async () => {
+      const userRef = collection(db, 'users');
+      const q = query(userRef, where('userId', '==', userId));
 
-  const [selectedComplaint, setSelectedComplaint] = useState(null);
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        setUser({
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
+          email: userData.email || '',
+          department: userData.department || '',
+          contactNo: userData.contactNumber || '',
+          profilePhoto: userData.profilePhoto || ProfilePhoto,
+          userType: userData.userType || '',
+        });
+      });
+    };
+
+    fetchUserDetails();
+  }, [userId]);
+
+ 
+  useEffect(() => {
+    if (!userId) return;
+
+    const unsubscribe = onSnapshot(collection(db, 'complaints'), (querySnapshot) => {
+      const complaintsArray = [];
+      querySnapshot.forEach((doc) => {
+        const complaintData = doc.data();
+        if (complaintData.userId === userId) {
+          complaintsArray.push({ id: doc.id, ...complaintData });
+        }
+      });
+      setComplaints(complaintsArray);
+    });
+
+    return () => unsubscribe(); 
+  }, [userId]);
 
   const handleFeedbackClick = (complaintId) => {
     setSelectedComplaint((prev) => (prev === complaintId ? null : complaintId));
   };
 
-  // Calculate statistics
+ 
   const totalComplaints = complaints.length;
   const resolvedComplaints = complaints.filter((complaint) => complaint.status === 'resolved').length;
   const unresolvedComplaints = totalComplaints - resolvedComplaints;
@@ -67,27 +87,33 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
           <p className="text-gray-600">User Type: {user.userType}</p>
           <p className="text-gray-600">Contact No: {user.contactNo}</p>
 
+          {/* Statistics Section */}
           <div className="mt-6 w-full p-4 border-2 border-grey-100 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-lg">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Complaint Statistics</h3>
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 gap-6">
+              {/* Total Complaints */}
               <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow mb-4">
-                <h4 className="text-sm text-gray-600">Total Complaints</h4>
+                <h4 className="text-sm text-gray-600">Total Complaints</h4> 
                 <p className="text-lg font-bold">{totalComplaints}</p>
               </div>
             </div>
 
+            {/* Resolved and Unresolved Complaints */}
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Resolved Complaints */}
               <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg shadow">
-                <h4 className="text-sm text-gray-600">Resolved Complaints</h4>
+                <h4 className="text-sm text-gray-600">Resolved<br></br> Complaints</h4>
                 <p className="text-lg font-bold">{resolvedComplaints}</p>
               </div>
 
+              {/* Unresolved Complaints */}
               <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg shadow">
                 <h4 className="text-sm text-gray-600">Unresolved Complaints</h4>
                 <p className="text-lg font-bold">{unresolvedComplaints}</p>
               </div>
             </div>
           </div>
+
         </div>
 
         <div className="md:col-span-2">
