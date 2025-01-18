@@ -3,10 +3,12 @@ import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import Modal from "../Modal";
+import { useNavigate } from "react-router-dom";
 
 const MakeComplaint = () => {
   const { currentUser } = useAuth();
   const userId = currentUser ? currentUser.uid : null;
+  const navigate = useNavigate(); 
 
   const [formData, setFormData] = useState({
     title: "",
@@ -30,6 +32,41 @@ const MakeComplaint = () => {
 
   const closeModal = () => setShowModal(false);
 
+  
+  const validateFields = () => {
+    if (!formData.title || formData.title.trim() === "") {
+      setModalMessage("Please enter a valid title.");
+      setShowModal(true);
+      return false;
+    }
+
+    if (!formData.description || formData.description.trim() === "") {
+      setModalMessage("Please provide a description for the complaint.");
+      setShowModal(true);
+      return false;
+    }
+
+    if (!formData.category || formData.category === "") {
+      setModalMessage("Please select a category.");
+      setShowModal(true);
+      return false;
+    }
+
+    if (!formData.priority || formData.priority === "") {
+      setModalMessage("Please select a priority level.");
+      setShowModal(true);
+      return false;
+    }
+
+    if (!formData.agreement) {
+      setModalMessage("You must agree to the privacy policy.");
+      setShowModal(true);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -39,10 +76,8 @@ const MakeComplaint = () => {
       return;
     }
 
-    if (!formData.agreement) {
-      setModalMessage("You must agree to the privacy policy.");
-      setShowModal(true);
-      return;
+    if (!validateFields()) {
+      return; 
     }
 
     setLoading(true);
@@ -61,14 +96,21 @@ const MakeComplaint = () => {
       await addDoc(collection(db, "complaints"), complaint);
       setModalMessage("Complaint submitted successfully!");
       setShowModal(true);
+
+      
       setFormData({
-        ...formData,
         title: "",
         description: "",
         category: "",
         priority: "Low",
         agreement: false,
       });
+
+      
+      setTimeout(() => {
+        setShowModal(false);
+        navigate("/studentdashboard"); 
+      }, 2000);
     } catch (error) {
       setModalMessage("Error submitting complaint. Please try again.");
       setShowModal(true);
@@ -84,7 +126,7 @@ const MakeComplaint = () => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-2xl max-w-3xl mx-auto space-y-6"
       >
-        {/* Complaint Details */}
+        
         <fieldset className="space-y-4">
           <legend className="font-semibold text-xl text-gray-700 mb-4">Complaint Details</legend>
           <label className="block text-gray-700">
@@ -121,7 +163,7 @@ const MakeComplaint = () => {
               <option value="IT Support">IT Support</option>
               <option value="Facilities">Facilities</option>
               <option value="Academics">Academics</option>
-              <option value="">Others</option>
+              <option value="Others">Others</option>
             </select>
           </label>
           <label className="block text-gray-700">
@@ -133,14 +175,14 @@ const MakeComplaint = () => {
               required
               className="mt-2 block w-full p-4 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </label>
         </fieldset>
 
-        {/* Agreement */}
+        
         <label className="flex items-center space-x-2 text-gray-700">
           <input
             type="checkbox"
@@ -152,17 +194,17 @@ const MakeComplaint = () => {
           <span className="text-sm">I agree to the privacy policy.</span>
         </label>
 
-        {/* Submit Button */}
+        
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 mt-4 bg-dark-blue-600 text-white rounded-lg hover:bg-dark-blue-600 focus:outline-none focus:ring-2 focus:dark-blue-600"
+          className="w-full py-3 mt-4 bg-dark-blue-600 text-white rounded-lg hover:bg-dark-blue-600 focus:outline-none focus:ring-2 focus:ring-dark-blue-600"
         >
           {loading ? "Submitting..." : "Submit Complaint"}
         </button>
       </form>
 
-      {/* Modal for Error/Success Messages */}
+      
       {showModal && <Modal message={modalMessage} onClose={closeModal} />}
     </main>
   );

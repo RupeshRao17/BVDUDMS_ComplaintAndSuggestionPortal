@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { useAuth } from "../context/AuthContext"; 
-import Modal from "../Modal"; 
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import Modal from "../Modal";
 
 const MakeSuggestion = () => {
-  const { currentUser } = useAuth(); 
-  const userId = currentUser ? currentUser.uid : null; 
+  const { currentUser } = useAuth();
+  const userId = currentUser ? currentUser.uid : null;
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -26,13 +28,29 @@ const MakeSuggestion = () => {
     });
   };
 
-  const closeModal = () => setShowModal(false);
+  const closeModal = () => {
+    setShowModal(false);
+    navigate("/studentdashboard"); 
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+  
     if (!userId) {
       setModalMessage("You must be logged in to submit a suggestion.");
+      setShowModal(true);
+      return;
+    }
+
+    if (!formData.title) {
+      setModalMessage("Title is required.");
+      setShowModal(true);
+      return;
+    }
+
+    if (!formData.description) {
+      setModalMessage("Description is required.");
       setShowModal(true);
       return;
     }
@@ -77,7 +95,7 @@ const MakeSuggestion = () => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow-2xl max-w-3xl mx-auto space-y-6"
       >
-        {/* Suggestion Details */}
+        
         <fieldset className="space-y-4">
           <legend className="font-semibold text-xl text-gray-700 mb-4">Suggestion Details</legend>
           <label className="block text-gray-700">
@@ -103,7 +121,7 @@ const MakeSuggestion = () => {
           </label>
         </fieldset>
 
-        {/* Agreement */}
+        
         <label className="flex items-center space-x-2 text-gray-700">
           <input
             type="checkbox"
@@ -115,7 +133,7 @@ const MakeSuggestion = () => {
           <span className="text-sm">I agree to the privacy policy.</span>
         </label>
 
-        {/* Submit Button */}
+        
         <button
           type="submit"
           disabled={loading}
@@ -125,7 +143,7 @@ const MakeSuggestion = () => {
         </button>
       </form>
 
-      {/* Modal for Error/Success Messages */}
+      
       {showModal && <Modal message={modalMessage} onClose={closeModal} />}
     </main>
   );

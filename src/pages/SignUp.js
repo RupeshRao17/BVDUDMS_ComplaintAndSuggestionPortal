@@ -19,20 +19,57 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
+    const validateField = (value, message) => {
+      if (!value || value === "Select department" || value === "Select UserType") {
+        alert(message);
+        return false;
+      }
+      return true;
+    };
+  
+    const validateContactNumber = (contactNumber) => {
+      if (contactNumber.length !== 10 || isNaN(contactNumber)) {
+        alert("Please enter a valid 10-digit contact number.");
+        return false;
+      }
+      return true;
+    };
+  
+    const validateEmail = (email) => {
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailPattern.test(email)) {
+        alert("Please enter a valid email address.");
+        return false;
+      }
+      return true;
+    };
+  
+    if (
+      !validateField(formData.firstName, "Please enter your first name.") ||
+      !validateField(formData.lastName, "Please enter your last name.") ||
+      !validateField(formData.contactNumber, "Please enter your contact number.") ||
+      !validateField(formData.email, "Please enter your email.") ||
+      !validateField(formData.password, "Please enter your password.") ||
+      !validateField(formData.department, "Please select a department.") ||
+      !validateField(formData.userType, "Please select a user type.") ||
+      !validateContactNumber(formData.contactNumber) ||
+      !validateEmail(formData.email)
+    ) {
+      return; 
+    }
+  
     try {
       const { email, password, ...userData } = formData;
-
-      // Create the user in Firebase Authentication
+  
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-      // Save user data in Firestore
+  
       await setDoc(doc(db, "users", userCredential.user.uid), {
         ...userData,
         email: email,
         userId: userCredential.user.uid,
         userType: formData.userType.toLowerCase(),
       });
-
+  
       alert("SignUp Successful! Please log in.");
       navigate("/login");
     } catch (error) {
@@ -40,7 +77,7 @@ const SignUp = () => {
       alert(error.message);
     }
   };
-
+  
   return (
     <div
       className="relative flex justify-center items-center min-h-screen bg-cover bg-center"
@@ -48,17 +85,17 @@ const SignUp = () => {
         backgroundImage: `url(${campusImageDesktop})`,
       }}
     >
-      {/* Black Tint Overlay */}
+      
       <div className="absolute inset-0 bg-black opacity-50 pointer-events-none z-0"></div>
 
-      {/* SignUp Form*/}
+      
       <div className="relative z-10 bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-dark-blue mb-2">
           Sign Up
         </h2> 
         <hr className="mb-5"></hr>
         <div className="space-y-3">
-          {/* First Name */}
+         
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               First Name
@@ -71,7 +108,7 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Last Name */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Last Name
@@ -84,7 +121,7 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Contact Number */}
+        
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Contact Number
@@ -98,7 +135,7 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Email */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
             <input
@@ -109,7 +146,7 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Password */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Password
@@ -131,7 +168,7 @@ const SignUp = () => {
             </small>
           </div>
 
-          {/* Department */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Department
@@ -147,7 +184,7 @@ const SignUp = () => {
             </select>
           </div>
 
-          {/* User Type */}
+          
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               User Type
@@ -164,7 +201,7 @@ const SignUp = () => {
             </select>
           </div>
 
-          {/* Sign Up Button */}
+          
           <button
             onClick={handleSignUp}
             className="w-full bg-dark-blue text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition duration-300"
@@ -173,7 +210,7 @@ const SignUp = () => {
           </button>
         </div>
 
-        {/* Login Link */}
+       
         <p className="mt-4 text-center text-gray-600">
           Already have an account?{" "}
           <button
