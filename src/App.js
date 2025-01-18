@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp";
 import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import MakeComplaint from './pages/MakeComplaint';
+import MakeSuggestion from './pages/MakeSuggestion';
 import logo from './media/logo_campus.png';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
             />
             <Route path="/admindashboard" element={<AdminDashboard />} />
             <Route path="/makecomplaint" element={<MakeComplaint />} />
+            <Route path="/makesuggestion" element={<MakeSuggestion />} />
           </Routes>
         </div>
         <Sidebar
