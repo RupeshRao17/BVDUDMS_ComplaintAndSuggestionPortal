@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -10,40 +10,48 @@ import MakeSuggestion from './pages/MakeSuggestion';
 import logo from './media/logo_campus.png';
 
 function App() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); 
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
 
+  useEffect(() => {
+    if (location.pathname === "/admindashboard") {
+      setIsSidebarCollapsed(true);
+    }
+  }, [location]);
+
   return (
     <AuthProvider>
-      <Router>
-        <Header
-          isSidebarCollapsed={isSidebarCollapsed}
-          toggleSidebar={toggleSidebar}
-        />
-        <div
-          className={`pt-24 transition-all duration-300 ${!isSidebarCollapsed ? 'mr-64' : ''} min-h-screen bg-cover bg-center`}
-        >
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />}></Route>
-            <Route
-              path="/studentdashboard"
-              element={<StudentDashboard isSidebarCollapsed={isSidebarCollapsed} />}
-            />
-            <Route path="/admindashboard" element={<AdminDashboard />} />
-            <Route path="/makecomplaint" element={<MakeComplaint />} />
-            <Route path="/makesuggestion" element={<MakeSuggestion />} />
-          </Routes>
-        </div>
+      <Header
+        isSidebarCollapsed={isSidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+      />
+      <div
+        className={`pt-24 transition-all duration-300 ${!isSidebarCollapsed ? 'mr-64' : ''} min-h-screen bg-cover bg-center`}
+      >
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/studentdashboard"
+            element={<StudentDashboard isSidebarCollapsed={isSidebarCollapsed} />}
+          />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/makecomplaint" element={<MakeComplaint />} />
+          <Route path="/makesuggestion" element={<MakeSuggestion />} />
+        </Routes>
+      </div>
+      {location.pathname !== "/admindashboard" && (
         <Sidebar
           isSidebarCollapsed={isSidebarCollapsed}
+          setIsSidebarCollapsed={setIsSidebarCollapsed} 
           toggleSidebar={toggleSidebar}
         />
-      </Router>
+      )}
     </AuthProvider>
   );
 }
@@ -79,7 +87,8 @@ function Header({ isSidebarCollapsed, toggleSidebar }) {
     </header>
   );
 }
-function Sidebar({ isSidebarCollapsed }) {
+
+function Sidebar({ isSidebarCollapsed, setIsSidebarCollapsed, toggleSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -93,9 +102,9 @@ function Sidebar({ isSidebarCollapsed }) {
     try {
       await logout();
       navigate('/');
+      setIsSidebarCollapsed(true); 
     } catch (error) {
       console.error('Logout failed:', error);
-      // You might want to show an error message to the user here
     }
   };
 
@@ -135,4 +144,11 @@ function Sidebar({ isSidebarCollapsed }) {
     </div>
   );
 }
-export default App;
+
+export default function Root() {
+  return (
+    <Router>
+      <App />
+    </Router>
+  );
+}

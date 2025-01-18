@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import '../index.css';
 import { db } from '../firebase';
+import { query, where } from 'firebase/firestore';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-
 import { Trash2 } from 'lucide-react';
 import AdminProfiePhoto from "../media/Admin_placeholder.jpg";
-
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -22,41 +21,53 @@ const AdminDashboard = () => {
   const [filteredComplaints, setFilteredComplaints] = useState([]);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
-  const [admin] = useState({
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@example.com',
+  const [admin, setAdmin] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
     profilePhoto: AdminProfiePhoto,
   });
   const [feedbacks, setFeedbacks] = useState({});
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const fetchComplaintsAndUsers = async () => {
-      const complaintsSnapshot = await getDocs(collection(db, "complaints"));
-      const complaintsList = [];
-      complaintsSnapshot.forEach((doc) => {
-        complaintsList.push({ id: doc.id, ...doc.data() });
-      });
-      setComplaints(complaintsList);
-      setFilteredComplaints(complaintsList);
+    const fetchData = async () => {
+      try {
+        const complaintsSnapshot = await getDocs(collection(db, "complaints"));
+        const complaintsList = complaintsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setComplaints(complaintsList);
+        setFilteredComplaints(complaintsList);
 
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const usersList = {};
-      usersSnapshot.forEach((doc) => {
-        usersList[doc.id] = doc.data();
-      });
-      setUsers(usersList);
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const usersList = {};
+        usersSnapshot.forEach((doc) => {
+          usersList[doc.id] = doc.data();
+        });
+        setUsers(usersList);
 
-      const suggestionsSnapshot = await getDocs(collection(db, "suggestions"));
-      const suggestionsList = [];
-      suggestionsSnapshot.forEach((doc) => {
-        suggestionsList.push({ id: doc.id, ...doc.data() });
-      });
-      setSuggestions(suggestionsList);
+        const adminQuery = query(collection(db, "users"), where("role", "==", "admin"));
+        const adminSnapshot = await getDocs(adminQuery);
+        if (!adminSnapshot.empty) {
+          const adminData = adminSnapshot.docs[0].data(); 
+          setAdmin({
+            firstName: adminData.firstName || '',
+            lastName: adminData.lastName || '',
+            email: adminData.email || '',
+            profilePhoto: adminData.profilePhoto || AdminProfiePhoto,
+          });
+        } else {
+          console.error("No admin found in the database.");
+        }
+
+        const suggestionsSnapshot = await getDocs(collection(db, "suggestions"));
+        const suggestionsList = suggestionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSuggestions(suggestionsList);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
 
-    fetchComplaintsAndUsers();
+    fetchData();
   }, []);
 
   const handleSearch = () => {
@@ -74,7 +85,7 @@ const AdminDashboard = () => {
     }
   
     if (filterCategory) {
-      filtered = filtered.filter(complaint => 
+      filtered = filtered.filter(complaint =>
         complaint.category && complaint.category.toLowerCase() === filterCategory.toLowerCase()
       );
     }
@@ -84,7 +95,7 @@ const AdminDashboard = () => {
     }
   
     setFilteredComplaints(filtered);
-  };
+  };  
   
   const handleToggleStatus = async (id, currentStatus) => {
     const complaintRef = doc(db, "complaints", id);
@@ -112,7 +123,6 @@ const AdminDashboard = () => {
 
       toast.success("Feedback deleted successfully!");
 
-     
       const querySnapshot = await getDocs(collection(db, "complaints"));
       const complaintsList = [];
       querySnapshot.forEach((doc) => {
@@ -139,7 +149,6 @@ const AdminDashboard = () => {
 
     toast.success("Feedback added successfully!");
 
-    // Refresh complaints after feedback is added
     const querySnapshot = await getDocs(collection(db, "complaints"));
     const complaintsList = [];
     querySnapshot.forEach((doc) => {
@@ -164,13 +173,19 @@ const AdminDashboard = () => {
     ],
   };
 
-  const chartDataRole = {
-    labels: ['Student', 'Faculty', 'Staff', 'Other'],
+  const categoryData = complaints.reduce((acc, complaint) => {
+    const category = complaint.category || 'Unknown';
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const chartDataCategory = {
+    labels: Object.keys(categoryData),
     datasets: [
       {
-        data: [5, 10, 3, 2],
-        backgroundColor: ['#FFB830', '#FF6384', '#36A2EB', '#FFCE56'],
-        hoverBackgroundColor: ['#FFB830', '#FF6384', '#36A2EB', '#FFCE56'],
+        data: Object.values(categoryData),
+        backgroundColor: ['#FFB830', '#FF6384', '#36A2EB', '#FFCE56', '#8A2BE2'],
+        hoverBackgroundColor: ['#FFB830', '#FF6384', '#36A2EB', '#FFCE56', '#8A2BE2'],
       },
     ],
   };
@@ -186,7 +201,7 @@ const AdminDashboard = () => {
     <div className="p-6 bg-gray-100 min-h-screen">
       {/* Header Section */}
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div className="flex flex-wrap justify-between items-center mb-6">
+        <div className="flex flex-wrap justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
           <div className="flex items-center mt-4 sm:mt-0">
             <img
@@ -240,7 +255,7 @@ const AdminDashboard = () => {
     value={filterStatus}
     onChange={(e) => setFilterStatus(e.target.value)}
   >
-    <option value="">All Statuses</option>
+    <option value="">All Status</option>
     <option value="resolved">Resolved</option>
     <option value="unresolved">Unresolved</option>
   </select>
@@ -256,7 +271,7 @@ const AdminDashboard = () => {
             <option value="academics">Academics</option>
             <option value="others">Others</option>
           </select>
-  
+
   <select
     className="w-full p-2 border rounded mb-4"
     value={filterPriority}
@@ -286,8 +301,8 @@ const AdminDashboard = () => {
               <Pie data={chartDataStatus} />
             </div>
             <div className="w-full sm:w-1/2 p-4 bg-gray-50 rounded-lg shadow">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Role Distribution</h4>
-              <Pie data={chartDataRole} />
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">Complaint Categories</h4>
+              <Pie data={chartDataCategory} />
             </div>
           </div>
         </div>
@@ -352,15 +367,16 @@ const AdminDashboard = () => {
                 <p><strong>Category:</strong> {complaint.category || 'Not specified'}</p>
                 <p><strong>Submitted On:</strong> {complaint.submittedOn || 'Invalid Date'}</p>
                 <p><strong>Submitted By:</strong> {users[complaint.userId] ? users[complaint.userId].email : 'Unknown'}</p>
+
                 <p>
                   <strong>Priority: </strong>
                   <span
                     className={`inline-block px-2 py-1 rounded text-white font-semibold ${
-                      complaint.priority === 'high'
+                      complaint.priority === 'High'
                         ? 'bg-red-500'
-                        : complaint.priority === 'medium'
+                        : complaint.priority === 'Medium'
                         ? 'bg-yellow-500'
-                        : complaint.priority === 'low'
+                        : complaint.priority === 'Low'
                         ? 'bg-green-500'
                         : 'bg-gray-300'
                     }`}
@@ -406,10 +422,10 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={() => handleToggleStatus(complaint.id, complaint.status)}
-                  className={`py-2 px-4 rounded mb-4 sm:mb-0 text-white ${
+                  className={`py-2 px-4 rounded mb-4 font-semibold sm:mb-0 text-white ${
                     complaint.status === "resolved"
-                      ? "bg-red-500 hover:bg-red-700"
-                      : "bg-green-500 hover:bg-green-700"
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
                   }`}
                 >
                   {complaint.status === "resolved" ? "Mark as Unresolved" : "Mark as Resolved"}
