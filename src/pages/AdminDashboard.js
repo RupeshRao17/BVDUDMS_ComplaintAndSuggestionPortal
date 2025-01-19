@@ -142,12 +142,24 @@ const AdminDashboard = () => {
       return;
     }
 
-    const complaintRef = doc(db, "complaints", id);
-    await updateDoc(complaintRef, {
-      feedback: feedbacks[id],
-    });
 
-    toast.success("Feedback added successfully!");
+    try {
+      const complaintRef = doc(db, "complaints", id);
+      await updateDoc(complaintRef, {
+        feedback: feedbacks[id],
+      });
+
+      toast.success("Feedback added successfully!");
+
+      // Clear the feedback input after submission
+      setFeedbacks((prevFeedbacks) => ({
+        ...prevFeedbacks,
+        [id]: "", // Clear the feedback for this complaint
+      }));
+    } catch (error) {
+      toast.error("Error adding feedback");
+      console.error("Error adding feedback:", error);
+    } 
 
     const querySnapshot = await getDocs(collection(db, "complaints"));
     const complaintsList = [];
@@ -285,10 +297,24 @@ const AdminDashboard = () => {
   
   <button
     onClick={handleSearch}
-    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mb-8"
   >
     Search
   </button>
+  <div className="flex justify-end">
+  <button
+    onClick={() => {
+      setSearchQuery("");
+      setFilterStatus("");
+      setFilterCategory("");
+      setFilterPriority("");
+      setFilteredComplaints(complaints);
+    }}
+    className="bg-gray-500 text-white text-sm py-1 px-2 rounded hover:bg-gray-600 ml-auto"
+  >
+    Reset Filters
+  </button>
+  </div>
 </div>
 
 
