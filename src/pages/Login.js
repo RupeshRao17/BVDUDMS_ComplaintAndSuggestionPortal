@@ -37,10 +37,10 @@ const Login = () => {
         setShowModal(true);
         return;
       }
-      const role = userDoc.data()?.userType;
+      const role = userDoc.data()?.role;
 
       if (activeTab === "Student") {
-        if (role === "student") navigate("/studentdashboard");
+        if (role === "user") navigate("/studentdashboard");
         else {
           setErrorMessage("You are not authorized to access the Student Dashboard.");
           setShowModal(true);
@@ -142,7 +142,7 @@ const Login = () => {
                     : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-300"
                 }`}
               >
-                Student
+                User
               </button>
               <button
                 onClick={() => setActiveTab("Admin")}
@@ -180,7 +180,7 @@ const Login = () => {
                 onClick={handleLogin}
                 className="w-full bg-dark-blue text-white py-2 rounded font-semibold hover:bg-dark-blue-600 transition duration-300"
               >
-                Login as {activeTab}
+                Login
               </button>
             </div>
 

@@ -15,6 +15,7 @@ const SignUp = () => {
     lastName: "",
     department: "Select department",
     userType: "Select UserType",
+    role: "user",
   });
 
   const [errorMessage, setErrorMessage] = useState("");

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../index.css';
 import { db } from '../firebase';
 import { query, where } from 'firebase/firestore';
+import { getAuth } from "firebase/auth";
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -33,6 +34,15 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error("No user is logged in.");
+        return;
+      }
+
+      const loggedInEmail = user.email;
+
         const complaintsSnapshot = await getDocs(collection(db, "complaints"));
         const complaintsList = complaintsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setComplaints(complaintsList);
@@ -45,7 +55,7 @@ const AdminDashboard = () => {
         });
         setUsers(usersList);
 
-        const adminQuery = query(collection(db, "users"), where("role", "==", "admin"));
+        const adminQuery = query(collection(db, "users"), where("email", "==", loggedInEmail), where("role", "==", "admin"));
         const adminSnapshot = await getDocs(adminQuery);
         if (!adminSnapshot.empty) {
           const adminData = adminSnapshot.docs[0].data(); 
