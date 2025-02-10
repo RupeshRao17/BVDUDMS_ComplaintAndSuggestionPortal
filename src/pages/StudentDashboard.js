@@ -19,7 +19,6 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
   const userId = auth?.currentUser?.uid;
   const navigate = useNavigate();
 
-  // Fetch user details
   useEffect(() => {
     if (!userId) return;
 
@@ -54,7 +53,11 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
       querySnapshot.forEach((doc) => {
         const complaintData = doc.data();
         if (complaintData.userId === userId) {
-          complaintsArray.push({ id: doc.id, ...complaintData });
+          complaintsArray.push({ 
+            id: doc.id, 
+            ...complaintData, 
+            feedback: Array.isArray(complaintData.feedbacks) ? complaintData.feedbacks : [] 
+          });
         }
       });
       setComplaints(complaintsArray);
@@ -162,16 +165,35 @@ const StudentDashboard = ({ isSidebarCollapsed }) => {
                   </button>
                 </div>
                 {selectedComplaint === complaint.id && (
-                  <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
-                    <p>
-                      <strong>Feedback from Admin:</strong> 
-                      {complaint.feedback || 'No feedback provided yet'}
-                    </p>
+                  <div className="mt-4 p-4 bg-white shadow-lg rounded-lg border border-gray-300">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Admin Feedback</h4>
+
+                    {complaint.feedback && complaint.feedback.length > 0 ? (
+                      <ul className="mt-2 space-y-2">
+                        {complaint.feedback.map((fb, index) => (
+                          <li key={index} className="bg-gray-100 p-3 rounded-lg border border-gray-200">
+                            <p className="text-gray-700">
+                              {typeof fb === "string" ? fb : fb.message || "No message provided"}
+                            </p>
+
+                            {/* Display Admin Email */}
+                            {fb.adminId && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                <span className="font-medium text-gray-800">From:</span> {fb.adminId}
+                              </p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-600 italic">No feedback provided yet</p>
+                    )}
                   </div>
                 )}
-              </div>
-            ))
-          )}
+
+                </div>
+              ))
+            )}
           <div className="mt-6 flex justify-center">
             <button
               onClick={() => navigate('/makecomplaint')}

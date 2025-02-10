@@ -3,7 +3,7 @@ import '../index.css';
 import { db } from '../firebase';
 import { query, where } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, arrayRemove } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Pie } from 'react-chartjs-2';
@@ -124,61 +124,94 @@ const AdminDashboard = () => {
     setFilteredComplaints(complaintsList);
   };
 
-  const handleDeleteFeedback = async (id) => {
+  
+  const handleDeleteFeedback = async (id, feedbackToDelete) => {
     try {
       const complaintRef = doc(db, "complaints", id);
+  
       await updateDoc(complaintRef, {
-        feedback: null
+        feedbacks: arrayRemove(feedbackToDelete),
       });
-
+  
       toast.success("Feedback deleted successfully!");
-
-      const querySnapshot = await getDocs(collection(db, "complaints"));
-      const complaintsList = [];
-      querySnapshot.forEach((doc) => {
-        complaintsList.push({ id: doc.id, ...doc.data() });
-      });
-      setComplaints(complaintsList);
-      setFilteredComplaints(complaintsList);
+  
+      setComplaints((prevComplaints) =>
+        prevComplaints.map((complaint) =>
+          complaint.id === id
+            ? {
+                ...complaint,
+                feedbacks: complaint.feedbacks
+                  ? complaint.feedbacks.filter((fb) => fb.timestamp !== feedbackToDelete.timestamp)
+                  : [],
+              }
+            : complaint
+        )
+      );
+  
+      setFilteredComplaints((prevFiltered) =>
+        prevFiltered.map((complaint) =>
+          complaint.id === id
+            ? {
+                ...complaint,
+                feedbacks: complaint.feedbacks
+                  ? complaint.feedbacks.filter((fb) => fb.timestamp !== feedbackToDelete.timestamp)
+                  : [],
+              }
+            : complaint
+        )
+      );
     } catch (error) {
       toast.error("Error deleting feedback");
       console.error("Error deleting feedback:", error);
     }
   };
+  
 
   const handleAddFeedback = async (id) => {
     if (!feedbacks[id]) {
       toast.error("Please provide feedback!");
       return;
     }
-
-
+  
     try {
       const complaintRef = doc(db, "complaints", id);
-      await updateDoc(complaintRef, {
-        feedback: feedbacks[id],
+      
+      const complaintSnap = await getDocs(collection(db, "complaints"));
+      let existingFeedbacks = [];
+      
+      complaintSnap.forEach((doc) => {
+        if (doc.id === id) {
+          existingFeedbacks = doc.data().feedbacks || [];
+        }
       });
-
+  
+      const newFeedback = {
+        message: feedbacks[id],
+        timestamp: new Date().toISOString(),
+        adminId: admin.email, 
+      };
+  
+      await updateDoc(complaintRef, {
+        feedbacks: [...existingFeedbacks, newFeedback],
+      });
+  
       toast.success("Feedback added successfully!");
 
-      // Clear the feedback input after submission
       setFeedbacks((prevFeedbacks) => ({
         ...prevFeedbacks,
-        [id]: "", // Clear the feedback for this complaint
+        [id]: "", 
       }));
+
+      const querySnapshot = await getDocs(collection(db, "complaints"));
+      const complaintsList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setComplaints(complaintsList);
+      setFilteredComplaints(complaintsList);
     } catch (error) {
       toast.error("Error adding feedback");
       console.error("Error adding feedback:", error);
-    } 
-
-    const querySnapshot = await getDocs(collection(db, "complaints"));
-    const complaintsList = [];
-    querySnapshot.forEach((doc) => {
-      complaintsList.push({ id: doc.id, ...doc.data() });
-    });
-    setComplaints(complaintsList);
-    setFilteredComplaints(complaintsList);
+    }
   };
+  
 
   const totalComplaints = complaints.length;
   const resolvedComplaints = complaints.filter((complaint) => complaint.status === "resolved").length;
@@ -422,24 +455,36 @@ const AdminDashboard = () => {
                 </p>
               </div>
 
-              {/* Feedback Section with Delete Option */}
-              {complaint.feedback && (
-                <div className="mt-4 mb-4 p-4 bg-gray-50 border border-gray-300 rounded-lg shadow">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h5 className="font-semibold text-gray-700">Feedback added: </h5>
-                      <p className="text-gray-600">{complaint.feedback}</p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteFeedback(complaint.id)}
-                      className="text-red-500 hover:text-red-700 p-1 rounded transition-colors"
-                      title="Delete feedback"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+        {/* Feedback Section with Delete Option */}
+        {complaint.feedbacks && complaint.feedbacks.length > 0 && (
+          <div className="mt-4 mb-4 p-4 bg-gray-50 border border-gray-300 rounded-lg shadow">
+            <h5 className="font-semibold text-gray-700">Feedbacks: </h5>
+            <ul className="mt-2">
+              {complaint.feedbacks.map((feedback, index) => (
+                <li 
+                  key={index} 
+                  className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm border border-gray-200 mb-2"
+                >
+                  <div>
+                    <span className="font-semibold text-gray-800">{feedback.adminId}:</span> 
+                    <span className="text-gray-600 ml-2">{feedback.message}</span> 
+                    <span className="text-gray-500 text-sm ml-2">
+                      ({new Date(feedback.timestamp).toLocaleString()})
+                    </span>
                   </div>
-                </div>
-              )}
+                  <button
+                    onClick={() => handleDeleteFeedback(complaint.id, feedback)}
+                    className="text-red-500 hover:text-red-700 p-2 rounded transition-colors"
+                    title="Delete feedback"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
 
               {/* Add Feedback Input */}
               <textarea

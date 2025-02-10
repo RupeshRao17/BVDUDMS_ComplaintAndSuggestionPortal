@@ -7,7 +7,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "firebase": "^11.0.2",
+    "firebase": "^11.3.0",
     "firebase-admin": "^13.0.1",
     "firebase-functions": "^6.1.1",
     "lucide-react": "^0.471.1",
