@@ -22,6 +22,24 @@ This project is a web application for managing complaints and suggestions within
 - Responsive design for mobile and desktop
 - Real-time updates using Firebase
 
+##Screenshots
+
+![Alt text](src/media/LoginPC.png)
+
+![Alt text](src/media/SignUpPc.png)
+
+![Alt text](src/media/StudentDashboard.png)
+
+![Alt text](src/media/MakeAComplaint.png)
+
+![Alt text](src/media/MakeSuggestions.png)
+
+![Alt text](src/media/AdminDashboard1.png)
+
+![Alt text](src/media/AdminDashboard2.png)
+
+
+
 ## Technologies Used
 
 - React
