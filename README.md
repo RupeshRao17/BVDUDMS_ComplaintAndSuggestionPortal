@@ -22,7 +22,7 @@ This project is a web application for managing complaints and suggestions within
 - Responsive design for mobile and desktop
 - Real-time updates using Firebase
 
-##Screenshots
+## Screenshots
 
 ![Alt text](src/media/LoginPC.png)
 
