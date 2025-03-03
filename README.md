@@ -66,7 +66,7 @@ This project is a web application for managing complaints and suggestions within
 
 ## Usage
 
-1. Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
+1. Open your browser and navigate to [https://bvdudms-complaintandsuggestionsportal.firebaseapp.com/](https://bvdudms-complaintandsuggestionsportal.firebaseapp.com/).
 2. Sign up as a new user or log in with existing credentials.
 3. Depending on your role (Student or Admin), you will be redirected to the appropriate dashboard.
 4. Students can submit complaints and suggestions, view their submissions, and track their status.
